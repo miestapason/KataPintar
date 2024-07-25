@@ -6,7 +6,7 @@ function App() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        axios.get('http://localhost:3000/')
+        axios.get('https://katapintar.onrender.com/')
             .then(response => {
                 setMessage(response.data);
             })
