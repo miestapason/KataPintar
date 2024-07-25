@@ -1,18 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import io from 'socket.io-client';
 import './App.css';
+
+const socket = io('https://katapintar.onrender.com'); // Gantikan dengan URL backend anda
 
 function App() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        axios.get('https://katapintar.onrender.com/')
-            .then(response => {
-                setMessage(response.data);
-            })
-            .catch(error => {
-                console.error("There was an error fetching the data!", error);
-            });
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        // Contoh penerimaan mesej
+        socket.on('message', (data) => {
+            setMessage(data);
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('message');
+        };
     }, []);
 
     return (
