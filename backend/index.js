@@ -5,9 +5,15 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: 'https://katapintar-frontend.onrender.com', // URL frontend anda
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+  }
+});
 
-// Gunakan cors
+// Gunakan cors untuk semua permintaan HTTP
 app.use(cors({
   origin: 'https://katapintar-frontend.onrender.com', // URL frontend anda
   methods: ['GET', 'POST'],
