@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -20,9 +21,12 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
+// Hidangkan fail statik dari direktori public
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Laluan untuk URL akar
 app.get('/', (req, res) => {
-  res.send('Hello, KataPintar!');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 io.on('connection', (socket) => {
