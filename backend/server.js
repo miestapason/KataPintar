@@ -14,33 +14,43 @@ const io = socketIo(server, {
   }
 });
 
-// Gunakan cors untuk semua permintaan HTTP
 app.use(cors({
   origin: 'https://katapintar-frontend.onrender.com', // URL frontend anda
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type']
 }));
 
-// Hidangkan fail statik dari direktori public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Laluan untuk URL akar
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+const wordToGuess = "SOMEBODY"; // Contoh perkataan teka-teki
+let guessedLetters = []; // Simpan huruf yang diteka oleh pemain
+let remainingAttempts = 6; // Bilangan percubaan yang tinggal
+
 io.on('connection', (socket) => {
   console.log('New client connected');
 
-  // Hantar mesej ujian sebaik sahaja disambungkan
-  socket.emit('message', 'Hello from server');
+  socket.emit('update', { wordToGuess, guessedLetters, remainingAttempts });
 
-  // Tambah lagi mesej setiap beberapa saat
-  setInterval(() => {
-    const message = `Server time: ${new Date().toLocaleTimeString()}`;
-    console.log('Sending message:', message);
-    socket.emit('message', message);
-  }, 5000);
+  socket.on('guess', (letter) => {
+    if (!guessedLetters.includes(letter)) {
+      guessedLetters.push(letter);
+
+      if (!wordToGuess.includes(letter)) {
+        remainingAttempts -= 1;
+      }
+
+      const gameStatus = remainingAttempts > 0 ? 'ongoing' : 'lost';
+      if (!wordToGuess.split('').some(l => !guessedLetters.includes(l))) {
+        gameStatus = 'won';
+      }
+
+      io.emit('update', { wordToGuess, guessedLetters, remainingAttempts, gameStatus });
+    }
+  });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
