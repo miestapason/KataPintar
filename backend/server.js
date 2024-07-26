@@ -22,13 +22,7 @@ app.use(cors({
 }));
 
 // Hidangkan fail statik dari direktori public
-app.use(express.static(path.join(__dirname, 'public'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Laluan untuk URL akar
 app.get('/', (req, res) => {
