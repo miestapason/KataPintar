@@ -16,7 +16,7 @@ function App() {
             console.log('Disconnected from server');
         });
 
-        // Contoh penerimaan mesej
+        // Menerima mesej dari server
         socket.on('message', (data) => {
             setMessage(data);
         });

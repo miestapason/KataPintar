@@ -16,6 +16,10 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     console.log('New client connected');
+    
+    // Hantar mesej kepada klien yang baru disambungkan
+    socket.emit('message', 'Selamat datang ke permainan KataPintar!');
+
     socket.on('disconnect', () => {
         console.log('Client disconnected');
     });
