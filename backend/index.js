@@ -14,6 +14,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
+// Laluan untuk URL akar
+app.get('/', (req, res) => {
+  res.send('Hello, KataPintar!');
+});
+
 io.on('connection', (socket) => {
   console.log('New client connected');
   socket.on('disconnect', () => {
