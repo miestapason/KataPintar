@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -6,6 +5,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -32,11 +32,15 @@ io.on('connection', (socket) => {
   updateGameState(socket);
 
   socket.on('guess', (letter) => {
+    console.log('Received guess:', letter);
+
     if (!guessedLetters.includes(letter) && wordToGuess.includes(letter)) {
       guessedLetters.push(letter);
     } else {
       remainingAttempts -= 1;
     }
+
+    console.log('Updated game state:', { wordToGuess, guessedLetters, remainingAttempts });
     io.emit('update', {
       wordToGuess: wordToGuess,
       guessedLetters: guessedLetters,

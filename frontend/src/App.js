@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('https://katapintar.onrender.com'); // URL backend anda
+const socket = io('https://katapintar.onrender.com'); // URL backend anda yang betul
 
 const App = () => {
   const [wordToGuess, setWordToGuess] = useState('');
