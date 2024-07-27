@@ -1,44 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client';
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors'); // Import cors
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+const path = require('path');
 
-const socket = io('https://katapintar-backend.onrender.com'); // URL backend anda
+// Gunakan cors middleware
+app.use(cors());
 
-const App = () => {
-  const [wordToGuess, setWordToGuess] = useState('');
-  const [guessedLetters, setGuessedLetters] = useState([]);
-  const [remainingAttempts, setRemainingAttempts] = useState(6);
-  const [gameStatus, setGameStatus] = useState('ongoing');
-  const [currentGuess, setCurrentGuess] = useState('');
+app.use(express.static(path.join(__dirname, 'public')));
 
-  useEffect(() => {
-    socket.on('update', ({ wordToGuess, guessedLetters, remainingAttempts, gameStatus }) => {
-      setWordToGuess(wordToGuess);
-      setGuessedLetters(guessedLetters);
-      setRemainingAttempts(remainingAttempts);
-      setGameStatus(gameStatus || 'ongoing');
-    });
+io.on('connection', (socket) => {
+  console.log('New client connected');
+  socket.emit('message', 'Hello from server');
 
-    return () => socket.off('update');
-  }, []);
+  setInterval(() => {
+    const serverTime = new Date().toLocaleTimeString();
+    socket.emit('message', `Server time: ${serverTime}`);
+  }, 5000);
 
-  const handleGuess = () => {
-    if (currentGuess) {
-      socket.emit('guess', currentGuess.toUpperCase());
-      setCurrentGuess('');
-    }
-  };
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
-  return (
-    <div>
-      <h1>Permainan Katapintar</h1>
-      <p>Perkataan: {wordToGuess.split('').map(letter => (guessedLetters.includes(letter) ? letter : '_')).join(' ')}</p>
-      <p>Huruf Diteka: {guessedLetters.join(', ')}</p>
-      <p>Baki Percubaan: {remainingAttempts}</p>
-      <p>Status Permainan: {gameStatus === 'won' ? 'Menang!' : gameStatus === 'lost' ? 'Kalah' : 'Sedang Berlangsung'}</p>
-      <input type="text" value={currentGuess} onChange={(e) => setCurrentGuess(e.target.value)} maxLength={1} />
-      <button onClick={handleGuess} disabled={gameStatus !== 'ongoing'}>Teka</button>
-    </div>
-  );
-};
-
-export default App;
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
