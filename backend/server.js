@@ -17,21 +17,32 @@ const io = socketIo(server, {
 let wordToGuess = "HELLO";
 let guessedLetters = [];
 let remainingAttempts = 6;
+let players = [];
+let currentTurnIndex = 0;
 
-const updateGameState = (socket) => {
-  socket.emit('update', {
+const updateGameState = () => {
+  io.emit('update', {
     wordToGuess: wordToGuess,
     guessedLetters: guessedLetters,
     remainingAttempts: remainingAttempts,
+    currentTurn: players[currentTurnIndex],
     gameStatus: remainingAttempts <= 0 ? 'lost' : guessedLetters.length === wordToGuess.length ? 'won' : 'ongoing'
   });
 };
 
 io.on('connection', (socket) => {
   console.log('New client connected');
-  updateGameState(socket);
+
+  // Tambah pemain baru
+  players.push(socket.id);
+  updateGameState();
 
   socket.on('guess', (letter) => {
+    if (players[currentTurnIndex] !== socket.id) {
+      // Bukan giliran pemain ini
+      return;
+    }
+
     console.log('Received guess:', letter);
 
     if (!guessedLetters.includes(letter) && wordToGuess.includes(letter)) {
@@ -41,16 +52,21 @@ io.on('connection', (socket) => {
     }
 
     console.log('Updated game state:', { wordToGuess, guessedLetters, remainingAttempts });
-    io.emit('update', {
-      wordToGuess: wordToGuess,
-      guessedLetters: guessedLetters,
-      remainingAttempts: remainingAttempts,
-      gameStatus: remainingAttempts <= 0 ? 'lost' : guessedLetters.length === wordToGuess.length ? 'won' : 'ongoing'
-    });
+
+    // Tukar giliran ke pemain seterusnya
+    currentTurnIndex = (currentTurnIndex + 1) % players.length;
+
+    updateGameState();
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
+    // Keluarkan pemain dari senarai
+    players = players.filter(player => player !== socket.id);
+    if (currentTurnIndex >= players.length) {
+      currentTurnIndex = 0; // Setkan giliran ke pemain pertama jika perlu
+    }
+    updateGameState();
   });
 });
 
